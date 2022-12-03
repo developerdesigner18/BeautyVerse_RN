@@ -156,7 +156,7 @@ const Home = () => {
   };
 
   return (
-    <SafeAreaView style={{flex: 1}}>
+    <SafeAreaView style={{flex: 1, backgroundColor:Colors.white}}>
       <AppHeader hide hideCal={isUpcoming}/>
       <Tab.Navigator
         tabBarOptions={{

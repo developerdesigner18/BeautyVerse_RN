@@ -85,7 +85,7 @@ export const styles = StyleSheet.create({
   },
 
   //New Tab
-  newTab: {paddingHorizontal: wp(3), paddingTop: hp(3)},
+  newTab: {paddingHorizontal: wp(3), paddingTop: hp(3),backgroundColor:Colors.white},
   bookingView: {
     marginBottom: hp(2),
     borderBottomWidth: 2,

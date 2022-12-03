@@ -92,8 +92,8 @@ const AddLocation = ({navigation, route}) => {
           headerTitle={Strings.businessAddress}
         />
       )}
-
-      <MapView
+    {/* <View> */}
+    <MapView
         provider={PROVIDER_GOOGLE}
         style={{...styles.mapView, paddingTop: bottom}}
         region={{
@@ -105,13 +105,7 @@ const AddLocation = ({navigation, route}) => {
         // showsUserLocation={true}
         // showsMyLocationButton={true}
         onMapReady={() => setBottom(5)}>
-        <View style={styles.backView}>
-          {params.from == 'profile' && (
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Icon source={Images.roundback} size={hp(5.5)} />
-            </TouchableOpacity>
-          )}
-        </View>
+      
         <Marker
           coordinate={{
             latitude: latitude,
@@ -119,7 +113,19 @@ const AddLocation = ({navigation, route}) => {
           }}>
           <Image source={Images.marker} style={styles.marker} />
         </Marker>
+
+        <View style={styles.backView}>
+          {params.from == 'profile' && (
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Icon source={Images.roundback} size={hp(5.5)} />
+            </TouchableOpacity>
+          )}
+        </View>
+        
       </MapView>
+
+    {/* </View> */}
+     
       <View style={styles.bottomView}>
         <TouchableOpacity
           style={styles.markerBtn}
