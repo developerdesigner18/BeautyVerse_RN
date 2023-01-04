@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {View, Image} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {styles} from './styles';
 import {Strings} from '../../theme/strings';
 import {Colors} from '../../theme/colors';
@@ -13,8 +14,10 @@ import {AuthStyles} from './AuthScreens/AuthStyles';
 const SplashScreen = ({navigation}) => {
   const [isOption, setOption] = useState(false);
   useEffect(() => {
-    setTimeout(() => {
-      setOption(true);
+    setTimeout(async () => {
+      // setOption(true);
+      const isToken = await AsyncStorage.getItem('token');
+      isToken ? navigation.navigate('business') : setOption(true);
     }, 3500);
   }, []);
 

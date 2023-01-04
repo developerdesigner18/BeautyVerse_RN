@@ -1,37 +1,36 @@
-import * as TYPES from '../constants';
+import * as TYPES from '../../constants';
 
 const initialState = {
   loading: false,
-  userProfile: [],
+  photosRes: [],
   error: null,
   isSuccess: false,
   isFailure: false,
 };
 
-const loginReducer = (state = initialState, actions) => {
+const postBusinessPhotosReducer = (state = initialState, actions) => {
   switch (actions.type) {
-    case TYPES.LOGIN_REQUEST:
+    case TYPES.BUSINESS_IMAGES_REQUEST:
       return {
         ...state,
         loading: true,
-        userProfile: null,
+        photosRes: null,
         isSuccess: false,
         isFailure: false,
       };
-    case TYPES.LOGIN_SUCCESS:
-      console.log('actions ===>', actions);
+    case TYPES.BUSINESS_IMAGES_SUCCESS:
       return {
         ...state,
         loading: false,
-        userProfile: actions.response,
+        photosRes: actions.response,
         isSuccess: true,
         isFailure: false,
       };
-    case TYPES.LOGIN_FAILURE:
+    case TYPES.BUSINESS_IMAGES_FAILURE:
       return {
         ...state,
         loading: false,
-        userProfile: null,
+        photosRes: null,
         error: actions.error,
         isSuccess: false,
         isFailure: true,
@@ -40,4 +39,4 @@ const loginReducer = (state = initialState, actions) => {
       return state;
   }
 };
-export default loginReducer;
+export default postBusinessPhotosReducer;

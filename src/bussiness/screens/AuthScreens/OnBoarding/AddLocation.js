@@ -129,6 +129,7 @@ const AddLocation = ({navigation, route}) => {
               latitude: latitude,
               longitude: longitude,
               place: place ? place : 'Melbourne, VIC, Australia',
+              path: params.from,
             })
           }
           title={Strings.selectLocation}
@@ -152,6 +153,7 @@ const AddLocation = ({navigation, route}) => {
                 placeholderTextColor: Colors.primary_dark,
               }}
               onPress={(data, details = null) => {
+                console.log(data);
                 const geometry = details?.geometry?.location;
                 setLongitude(geometry.lng);
                 setLatitude(geometry.lat);

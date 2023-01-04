@@ -157,6 +157,9 @@ export const Strings = {
   notifications: 'Notifications',
   security: 'Security',
   factorAuthentication: '2 Factor Authentication (2FA)',
-  editLocation :'Edit Location',
-  editTime : 'Edit Time',
+  editLocation: 'Edit Location',
+  editTime: 'Edit Time',
+  typeOfAddress: 'Type of Address',
+  home: 'Home',
+  office: 'Office',
 };

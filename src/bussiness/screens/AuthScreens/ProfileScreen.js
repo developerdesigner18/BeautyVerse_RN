@@ -5,10 +5,16 @@ import {
   Image,
   SafeAreaView,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
+import {useSelector, useDispatch} from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {showMessage} from 'react-native-flash-message';
 import Button from '../../components/Button';
 import Label from '../../components/Label/index';
+import Spinner from '../../components/Spinner';
+import {profilePicThunk} from '../../../store/actions/profile-actions';
 import {Colors} from '../../theme/colors';
 import {Images} from '../../theme/images';
 import {Strings} from '../../theme/strings';
@@ -20,13 +26,36 @@ import {
 } from '../../theme/layout';
 
 const ProfileScreen = ({navigation}) => {
+  const dispatch = useDispatch();
+  const {profilePic} = useSelector(state => state);
   const [profileUri, setProfileUri] = useState('');
 
   const profilePicker = () => {
     ImagePicker.openPicker({}).then(image => {
       console.log(image.path);
       setProfileUri(image.path);
+      uplaodProfile(image.path);
     });
+  };
+
+  const uplaodProfile = async profileUri => {
+    const token = await AsyncStorage.getItem('token');
+    const formData = new FormData();
+    let cleanUri =
+      Platform.OS === 'ios' ? profileUri.replace('file:/', '') : profileUri;
+    formData.append('img', {
+      uri: cleanUri,
+      type: 'image/jpeg',
+      name: 'imagename.jpg',
+    });
+    dispatch(profilePicThunk(formData, token));
+    if (profilePic.isSuccess) {
+      showMessage({
+        message: 'Profile pitcure updated successfully',
+        floating: true,
+        type: 'success',
+      });
+    }
   };
 
   return (
@@ -61,8 +90,13 @@ const ProfileScreen = ({navigation}) => {
           titleColor={Colors.white}
           btnStyle={{marginBottom: 5}}
         />
-        <Button title={Strings.skip} titleColor={Colors.primary} />
+        <Button
+          onPress={() => navigation.navigate('AddLocation', {from: 'auth'})}
+          title={Strings.skip}
+          titleColor={Colors.primary}
+        />
       </View>
+      <Spinner visible={profilePic.loading} />
     </SafeAreaView>
   );
 };

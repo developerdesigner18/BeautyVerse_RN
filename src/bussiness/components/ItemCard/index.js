@@ -29,7 +29,8 @@ const Index = ({
   option,
   label,
   menu,
-  hideLine
+  hideLine,
+  onPressItem,
 }) => {
   const [optionModal, setOptionModal] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -139,7 +140,10 @@ const Index = ({
           {menu.map((item, index) => (
             <MenuItem key={index}>
               <IconButton
-                onPress={() => setOptionModal(false)}
+                onPress={() => {
+                  onPressItem(item.label);
+                  setVisible(false);
+                }}
                 icon={item.icon}
                 iconSize={hp(2)}
                 iconColor={Colors.gray}

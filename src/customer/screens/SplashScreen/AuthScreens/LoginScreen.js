@@ -1,15 +1,17 @@
-//import liraries
-import React, {Component} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
-  TextInput,
-  StyleSheet,
   Text,
   Keyboard,
   TouchableOpacity,
   Image,
   TouchableWithoutFeedback,
 } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useSelector, useDispatch} from 'react-redux';
+import {showMessage} from 'react-native-flash-message';
+import {loginThunk} from '../../../../store/actions/auth-actions';
 import BackButton from '../../../components/AuthComponents/BackButton';
 import {AuthStyles} from './AuthStyles';
 import AuthInput from '../../../components/AuthComponents/AuthInput';
@@ -24,11 +26,63 @@ import Button from '../../../components/AuthComponents/FilledButton';
 import {Colors} from '../../../theme/colors';
 import TwoSideButton from '../../../components/AuthComponents/TwoSideButton';
 import BottomTitle from '../../../components/AuthComponents/BottomTitle';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import Spinner from '../../../../bussiness/components/Spinner';
 
-// create a component
 const LoginScreen = ({navigation, route}) => {
   const {params} = route;
+  const dispatch = useDispatch();
+  const {login} = useSelector(state => state);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  useEffect(() => {
+    async function loginRes() {
+      if (login.isSuccess) {
+        if (login.isSuccess) {
+          const user = login.login.data;
+
+          user.status == 1 &&
+            showMessage({
+              message: user.message,
+              floating: true,
+              type: 'success',
+            });
+          await AsyncStorage.setItem('token', user.access_token);
+          setTimeout(() => {
+            navigation.replace(
+              params.role == 'Customer' ? 'customer' : 'business',
+            );
+          }, 1000);
+        } else {
+          showMessage({
+            message: 'Logged in failed.',
+            floating: true,
+            type: 'danger',
+          });
+        }
+      }
+    }
+    loginRes();
+  }, [login]);
+
+  const loginAPI = async () => {
+    if (email && password) {
+      const data = {
+        emailID: email,
+        password: password,
+      };
+      try {
+        dispatch(loginThunk(data));
+      } catch (error) {}
+    } else {
+      showMessage({
+        message: 'All fields must be filled.',
+        floating: true,
+        type: 'danger',
+      });
+    }
+  };
+
   return (
     <SafeAreaView style={{flex: 1}}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -59,8 +113,16 @@ const LoginScreen = ({navigation, route}) => {
                   : Strings.loginAsBusiness
               }
             />
-            <AuthInput placeholder={'Email Address'} />
-            <TwoSideInput placeholder={'Password'} />
+            <AuthInput
+              placeholder={'Email Address'}
+              value={email}
+              onChangeText={text => setEmail(text)}
+            />
+            <TwoSideInput
+              placeholder={'Password'}
+              value={password}
+              onChangeText={text => setPassword(text)}
+            />
             <TouchableOpacity
               onPress={() => {
                 navigation.navigate('ForgotPass');
@@ -75,11 +137,7 @@ const LoginScreen = ({navigation, route}) => {
               </Text>
             </TouchableOpacity>
             <Button
-              onPress={() => {
-                navigation.navigate(
-                  params.role == 'Customer' ? 'customer' : 'business',
-                );
-              }}
+              onPress={() => loginAPI()}
               btnStyle={{width: wp(90)}}
               title={Strings.logintext}
               bgColor={Colors.primary}
@@ -101,11 +159,9 @@ const LoginScreen = ({navigation, route}) => {
           </View>
         </View>
       </TouchableWithoutFeedback>
+      <Spinner visible={login.loading} />
     </SafeAreaView>
   );
 };
 
-// define your styles
-
-//make this component available to the app
 export default LoginScreen;

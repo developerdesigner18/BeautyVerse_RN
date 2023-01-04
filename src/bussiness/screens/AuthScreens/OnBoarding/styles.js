@@ -80,6 +80,17 @@ export const styles = StyleSheet.create({
     bottom: hp(5),
     position: 'absolute',
   },
+  locationtype: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.white,
+    marginTop: hp(2),
+    width: wp(50),
+  },
+  typeView: {
+    paddingLeft: wp(2),
+    marginTop: hp(1),
+  },
 
   //Business Timing
   dropdown: {

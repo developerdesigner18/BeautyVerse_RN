@@ -8,11 +8,10 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   optionContainer: {
-    bottom:0,
-    position:'absolute'
+    bottom: 0,
+    position: 'absolute',
   },
-  fontFamily:{
-    
-    fontfamily:'IntelV'
-  }
+  fontFamily: {
+    fontfamily: 'IntelV',
+  },
 });

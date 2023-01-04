@@ -1,8 +1,7 @@
 //import liraries
-import React, {Component} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
-  TextInput,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -10,9 +9,16 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
 } from 'react-native';
+import Modal from 'react-native-modal';
+import {useSelector, useDispatch} from 'react-redux';
+import {showMessage} from 'react-native-flash-message';
 import BackButton from '../../../components/AuthComponents/BackButton';
 import {AuthStyles} from './AuthStyles';
 import AuthInput from '../../../components/AuthComponents/AuthInput';
+import {
+  signupThunk,
+  verifyOTPThunk,
+} from '../../../../store/actions/auth-actions';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -25,12 +31,64 @@ import {Colors} from '../../../theme/colors';
 import TwoSideButton from '../../../components/AuthComponents/TwoSideButton';
 import BottomTitle from '../../../components/AuthComponents/BottomTitle';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-// create a component
+import OTPSheet from '../../../components/AuthComponents/OTPSheet';
+
 const RegistrationScreen = ({navigation, route}) => {
   const Notchecked = '../../../assets/AuthScreen/emptybox.png';
   const checked = '../../../assets/AuthScreen/Filledbox.png';
   const {params} = route;
+  const dispatch = useDispatch();
+  const {singup, otp} = useSelector(state => state);
+  const [email, setEmail] = useState('');
+  const [fName, setFName] = useState('');
+  const [lName, setLName] = useState('');
+  const [businessName, setBusinessName] = useState('');
+  const [mobile, setMobile] = useState('+919510765239');
+  const [password, setPassword] = useState('');
+  const [OTP, setOTP] = useState('');
+  const [verifyModal, setVerifyModal] = useState(false);
+
+  const registration = async () => {
+    const data = {
+      emailID: email,
+      fullname: params.role == 'Customer' ? fName + ' ' + lName : businessName,
+      password: password,
+      mobile: mobile,
+      role: params.role == 'Customer' ? 'customer' : 'business',
+    };
+    dispatch(signupThunk(data));
+    if (singup.isSuccess) {
+      setVerifyModal(true);
+    }
+  };
+
+  const OTPVerification = () => {
+    const data = {
+      emailID: email,
+      OTP: OTP,
+    };
+    dispatch(verifyOTPThunk(data));
+
+    if (otp.isSuccess && otp.verifyOTP.data.status == 1) {
+      showMessage({
+        message: otp.verifyOTP.data.message,
+        floating: true,
+        type: 'success',
+      });
+
+      setTimeout(() => {
+        setVerifyModal(false);
+        navigation.navigate('LoginScreen', {role: params.role});
+      }, 1000);
+    } else {
+      showMessage({
+        message: otp.verifyOTP.data.message,
+        floating: true,
+        type: 'warning',
+      });
+    }
+  };
+
   return (
     <SafeAreaView style={{flex: 1}}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -71,17 +129,33 @@ const RegistrationScreen = ({navigation, route}) => {
                 <AuthInput
                   Inputstyle={{width: '47%'}}
                   placeholder={'First Name'}
+                  value={fName}
+                  onChangeText={text => setFName(text)}
                 />
                 <AuthInput
                   Inputstyle={{width: '47%'}}
                   placeholder={'Last Name'}
+                  value={lName}
+                  onChangeText={text => setLName(text)}
                 />
               </View>
             ) : (
-              <AuthInput placeholder={'Business Name'} />
+              <AuthInput
+                placeholder={'Business Name'}
+                value={businessName}
+                onChangeText={text => setBusinessName(text)}
+              />
             )}
-            <AuthInput placeholder={'Email Address'} />
-            <TwoSideInput placeholder={'Password'} />
+            <AuthInput
+              placeholder={'Email Address'}
+              value={email}
+              onChangeText={text => setEmail(text)}
+            />
+            <TwoSideInput
+              placeholder={'Password'}
+              value={password}
+              onChangeText={text => setPassword(text)}
+            />
 
             <View
               style={{
@@ -118,9 +192,7 @@ const RegistrationScreen = ({navigation, route}) => {
               </TouchableOpacity>
             </View>
             <Button
-              onPress={() => {
-                navigation.navigate('LoginScreen');
-              }}
+              onPress={() => registration()}
               btnStyle={{width: wp(90)}}
               title={Strings.signupText}
               bgColor={Colors.primary}
@@ -142,6 +214,13 @@ const RegistrationScreen = ({navigation, route}) => {
           </View>
         </View>
       </TouchableWithoutFeedback>
+      <Modal isVisible={verifyModal}>
+        <OTPSheet
+          mobile={mobile}
+          onVerify={() => OTPVerification()}
+          handleTextChange={e => setOTP(e)}
+        />
+      </Modal>
     </SafeAreaView>
   );
 };

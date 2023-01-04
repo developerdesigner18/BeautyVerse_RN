@@ -1,6 +1,4 @@
-//import liraries
-//import liraries
-import React, {Component} from 'react';
+import React, {useState} from 'react';
 import {
   View,
   TextInput,
@@ -12,6 +10,9 @@ import {
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
 } from 'react-native';
+import {useDispatch, useSelector} from 'react-redux';
+import {showMessage} from 'react-native-flash-message';
+import {resetPassThunk} from '../../../../store/actions/auth-actions';
 import BackButton from '../../../components/AuthComponents/BackButton';
 import {AuthStyles} from './AuthStyles';
 import AuthInput from '../../../components/AuthComponents/AuthInput';
@@ -29,31 +30,53 @@ import BottomTitle from '../../../components/AuthComponents/BottomTitle';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 // create a component
-const ResetPass = ({navigation}) => {
+const ResetPass = ({navigation, route}) => {
+  const dispatch = useDispatch();
+  const {params} = route;
+  const {resetPass} = useSelector(state => state);
+  const [newPass, setNewPass] = useState('');
+  const [confirmPass, setConfirmPass] = useState('');
+
+  const resetPassword = () => {
+    if (newPass != confirmPass) {
+      showMessage({
+        message: 'Pasword does not match.',
+        floating: true,
+        type: 'danger',
+      });
+    } else {
+      const data = {
+        userID: params.userId,
+        password: confirmPass,
+      };
+      dispatch(resetPassThunk(data, params.token));
+      if (resetPass.isSuccess) {
+        navigation.navigate('LoginScreen');
+      }
+    }
+  };
   return (
     <SafeAreaView style={{flex: 1}}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={AuthStyles.container}>
-        <View style={{height:hp(55)}}>
-    <Image
-    resizeMode='contain'
-        style={[AuthStyles.LogoSize,{position:"absolute",top:hp(22)}]}
-        source={require('../../../assets/AuthScreen/Logo.png')}
-      />
-      <BackButton 
-      onPress={()=>{
-        navigation.goBack()
-      }}
-      />
-      <Image
-       style={{position: 'absolute', alignSelf: 'center',bottom:0}}
-       source={require('../../../assets/AuthScreen/Fade.png')}
-      />
-    </View>
+          <View style={{height: hp(55)}}>
+            <Image
+              resizeMode="contain"
+              style={[AuthStyles.LogoSize, {position: 'absolute', top: hp(22)}]}
+              source={require('../../../assets/AuthScreen/Logo.png')}
+            />
+            <BackButton
+              onPress={() => {
+                navigation.goBack();
+              }}
+            />
+            <Image
+              style={{position: 'absolute', alignSelf: 'center', bottom: 0}}
+              source={require('../../../assets/AuthScreen/Fade.png')}
+            />
+          </View>
           <View style={AuthStyles.BottomSlideReset}>
-            <HeaderText 
-            FontSize={hp(3.2)}
-            TopText={Strings.Reset} />
+            <HeaderText FontSize={hp(3.2)} TopText={Strings.Reset} />
             <Text
               style={{
                 textAlign: 'center',
@@ -63,10 +86,19 @@ const ResetPass = ({navigation}) => {
               }}>
               {Strings.ForgotInst}
             </Text>
-            <AuthInput placeholder={'Enter New Password'} />
-            <AuthInput placeholder={'Confirm New Password'} />
+            <AuthInput
+              placeholder={'Enter New Password'}
+              value={newPass}
+              onChangeText={text => setNewPass(text)}
+            />
+            <AuthInput
+              placeholder={'Confirm New Password'}
+              value={confirmPass}
+              onChangeText={text => setConfirmPass(text)}
+            />
 
             <Button
+              onPress={() => resetPassword()}
               btnStyle={{width: wp(90)}}
               title={Strings.Reset}
               bgColor={Colors.primary}

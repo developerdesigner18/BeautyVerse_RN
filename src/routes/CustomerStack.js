@@ -55,6 +55,7 @@ export function CustomerStack() {
       name: 'BookService',
       component: BookService,
     },
+
     {
       name: 'ProfileHome',
       component: ProfileHome,
@@ -89,14 +90,17 @@ export function CustomerStack() {
       name: 'BottomTabs',
       component: BottomTabs,
     },
+
     {
       name: 'WalletHome',
       component: WalletHome,
     },
+
     {
       name: 'WishlistItems',
       component: WishlistItems,
     },
+
     {
       name: 'MyProfile',
       component: MyProfile,
@@ -113,6 +117,7 @@ export function CustomerStack() {
       name: 'UserAddresses',
       component: UserAddresses,
     },
+
     {
       name: 'OrderDetails',
       component: OrderDetails,
@@ -121,10 +126,12 @@ export function CustomerStack() {
       name: 'RescheduleOrder',
       component: RescheduleOrder,
     },
+
     {
       name: 'OrdersHome',
       component: OrdersHome,
     },
+
     {
       name: 'InsertAdd',
       component: InsertAdd,
@@ -134,6 +141,7 @@ export function CustomerStack() {
       name: 'SeePhotos',
       component: SeePhotos,
     },
+
     {
       name: 'Reviews',
       component: Reviews,
@@ -161,10 +169,12 @@ export function CustomerStack() {
       name: 'TopBusinesses',
       component: TopBusinesses,
     },
+
     {
       name: 'ActivePromotions',
       component: ActivePromotions,
     },
+
     {
       name: 'AllCategories',
       component: AllCategories,
@@ -173,6 +183,7 @@ export function CustomerStack() {
       name: 'HomeScreen',
       component: HomeScreen,
     },
+
     {
       name: 'HomeSplashScreen',
       component: HomeSplashScreen,

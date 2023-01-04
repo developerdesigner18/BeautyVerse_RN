@@ -13,7 +13,6 @@ import {Colors} from '../../../../theme/colors';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect } from 'react';
 
 
 // create a component

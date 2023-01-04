@@ -73,6 +73,15 @@ export const styles = StyleSheet.create({
     paddingRight: wp(2),
     marginRight: wp(2),
   },
+  blankBg: {
+    height: hp(15),
+    width: hp(15),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderColor: Colors.border,
+    borderWidth: 1,
+    borderRadius: 10,
+  },
   addImg: {
     height: hp(15),
     width: hp(15),
@@ -91,6 +100,6 @@ export const styles = StyleSheet.create({
   securityView: {
     borderTopColor: Colors.border,
     borderTopWidth: 1,
-    paddingTop:hp(3)
+    paddingTop: hp(3),
   },
 });

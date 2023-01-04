@@ -1,12 +1,12 @@
-import React, {useState} from 'react';
-import {
-  View,
-  SafeAreaView,
-  Image,
-} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {View, SafeAreaView, Image} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import Header from '../../../components/Header';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import MapView, {Marker} from 'react-native-maps';
+import {useDispatch, useSelector} from 'react-redux';
+import {showMessage} from 'react-native-flash-message';
+import Header from '../../../components/Header';
+import {addressThunk} from '../../../../store/actions/profile-actions';
 import {Strings} from '../../../theme/strings';
 import {styles} from './styles';
 import {Images} from '../../../theme/images';
@@ -14,6 +14,8 @@ import Icon from '../../../components/Icon';
 import Label from '../../../components/Label';
 import Input from '../../../components/Input';
 import Button from '../../../components/Button';
+import RadioButton from '../../../components/RadioButton';
+import Spinner from '../../../components/Spinner';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -22,13 +24,67 @@ import {Colors} from '../../../theme/colors';
 
 const Addressdetails = ({navigation, route}) => {
   const {params} = route;
+  const dispatch = useDispatch();
+  const {addressRes} = useSelector(state => state);
   const [latitude, setLatitude] = useState(params.latitude);
   const [longitude, setLongitude] = useState(params.longitude);
-  const [flatNo, setFlatNo] = useState(Strings.flatNo);
-  const [villa, setVilla] = useState(Strings.building);
-  const [street, setStreet] = useState(Strings.street);
-  const [area, setArea] = useState(Strings.area);
-  const [direction, setDirection] = useState(Strings.directions);
+  const [flatNo, setFlatNo] = useState();
+  const [villa, setVilla] = useState();
+  const [street, setStreet] = useState();
+  const [area, setArea] = useState();
+  const [direction, setDirection] = useState();
+  const [addType, setAddType] = useState();
+  const [locationName, setLocationName] = useState();
+
+  useEffect(() => {
+    function postSuccess() {
+      if (addressRes.isSuccess) {
+        showMessage({
+          message: 'Address updated successfully',
+          floating: true,
+          type: 'success',
+        });
+        params.path == 'auth'
+          ? navigation.navigate('BusinessTiming')
+          : navigation.navigate('Address');
+      }
+    }
+    postSuccess();
+  }, [addressRes]);
+  useEffect(() => {
+    const address = params.place.split(',');
+    console.log(address);
+    setStreet(address[0]);
+    setArea(address[1]);
+    setLocationName(address[address.length - 1]);
+  }, []);
+
+  const addAddress = async () => {
+    const token = await AsyncStorage.getItem('token');
+    const data = {
+      flatNo: flatNo,
+      buildingName: villa,
+      street: street,
+      area: area,
+      directions: direction,
+      locationName: locationName,
+      locationType: addType,
+      latitude: latitude,
+      longitude: longitude,
+    };
+
+    dispatch(addressThunk(data, token));
+    // if (addressRes.isSuccess) {
+    //   showMessage({
+    //     message: 'Address updated successfully',
+    //     floating: true,
+    //     type: 'success',
+    //   });
+    //   params.path == 'auth'
+    //     ? navigation.navigate('BusinessTiming')
+    //     : navigation.navigate('Address');
+    // }
+  };
 
   return (
     <SafeAreaView style={styles.conatiner}>
@@ -65,7 +121,12 @@ const Addressdetails = ({navigation, route}) => {
                 left
                 color={Colors.primary_dark1}
               />
-              <Label label={params.place} medium color={Colors.lightGray3}/>
+              <Label
+                label={params.place}
+                medium
+                left
+                color={Colors.lightGray3}
+              />
             </View>
             <Icon source={Images.edit} size={wp(6)} />
           </View>
@@ -119,14 +180,30 @@ const Addressdetails = ({navigation, route}) => {
           width={wp(90)}
           size={hp(1.9)}
         />
+        <View style={styles.typeView}>
+          <Label label={Strings.typeOfAddress} left />
+          <View style={styles.locationtype}>
+            <RadioButton
+              checked={addType == 'home'}
+              label={Strings.home}
+              onPress={() => setAddType('home')}
+            />
+            <RadioButton
+              checked={addType == 'office'}
+              label={Strings.office}
+              onPress={() => setAddType('office')}
+            />
+          </View>
+        </View>
       </KeyboardAwareScrollView>
       <Button
-        onPress={() => navigation.navigate('BusinessTiming')}
+        onPress={() => addAddress()}
         title={Strings.next}
         bgColor={Colors.primary}
         titleColor={Colors.white}
         btnStyle={styles.nextBtn}
       />
+      <Spinner visible={addressRes.loading} />
     </SafeAreaView>
   );
 };

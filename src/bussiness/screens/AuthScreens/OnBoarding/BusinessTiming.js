@@ -2,6 +2,13 @@ import React, {useState, useEffect} from 'react';
 import {View, SafeAreaView, ScrollView, TouchableOpacity} from 'react-native';
 import {Switch} from 'react-native-paper';
 import DatePicker from 'react-native-date-picker';
+import {showMessage} from 'react-native-flash-message';
+import {useDispatch, useSelector} from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  daysAndTimingThunk,
+  getdaysAndTimingThunk,
+} from '../../../../store/actions/profile-actions';
 import moment from 'moment';
 import Header from '../../../components/Header';
 import {Strings} from '../../../theme/strings';
@@ -11,6 +18,7 @@ import Button from '../../../components/Button';
 import Icon from '../../../components/Icon';
 import {Colors} from '../../../theme/colors';
 import Label from '../../../components/Label';
+import Spinner from '../../../components/Spinner';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -18,61 +26,115 @@ import {
 import {FONTS} from '../../../theme/fonts';
 
 const BusinessTiming = ({navigation}) => {
+  const dispatch = useDispatch();
+  const {timingsRes, daysAndTiming} = useSelector(state => state);
   const [switchIndex, setSwitchIndex] = useState([]);
   const [open, setOpen] = useState(false);
   const [selectedTime, setSelectedTime] = useState();
   const [value, setValue] = useState('');
+  const [token, setToken] = useState(false);
+  const days = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
   const [timings, setTimings] = useState([
     {
-      id: 1,
-      day: 'Monday',
+      id: 0,
+      day: 0,
       fromTime: '12:00 PM',
       toTime: '12:00 AM',
-      opne: true,
+      status: true,
+    },
+    {
+      id: 1,
+      day: 1,
+      fromTime: '12:00 PM',
+      toTime: '12:00 AM',
+      status: true,
     },
     {
       id: 2,
-      day: 'Tuesday',
+      day: 2,
       fromTime: '12:00 PM',
       toTime: '12:00 AM',
-      opne: true,
+      status: true,
     },
     {
       id: 3,
-      day: 'Wednesday',
+      day: 3,
       fromTime: '12:00 PM',
       toTime: '12:00 AM',
-      opne: true,
+      status: true,
     },
     {
       id: 4,
-      day: 'Thursday',
+      day: 4,
       fromTime: '12:00 PM',
       toTime: '12:00 AM',
-      opne: true,
+      status: true,
     },
     {
       id: 5,
-      day: 'Friday',
+      day: 5,
       fromTime: '12:00 PM',
       toTime: '12:00 AM',
-      opne: true,
+      status: false,
     },
     {
       id: 6,
-      day: 'Saturday',
+      day: 6,
       fromTime: '12:00 PM',
       toTime: '12:00 AM',
-      opne: false,
-    },
-    {
-      id: 7,
-      day: 'Sunday',
-      fromTime: '12:00 PM',
-      toTime: '12:00 AM',
-      opne: false,
+      status: false,
     },
   ]);
+
+  useEffect(() => {
+    function postSuccess() {
+      if (daysAndTiming.isSuccess) {
+        showMessage({
+          message: 'Inserted successfully',
+          floating: true,
+          type: 'success',
+        });
+        navigation.navigate('SelectServices');
+      }
+    }
+    postSuccess();
+    function getSuccess() {
+      if (timingsRes.isSuccess) {
+        const data = timingsRes.timingsRes.data.data;
+        data.length > 1 && setTimings(data);
+      }
+    }
+    getSuccess();
+  }, [daysAndTiming, timingsRes]);
+
+  useEffect(() => {
+    getDaysAndTiming();
+  }, []);
+
+  const addDaysandTiming = () => {
+    // navigation.navigate('SelectServices');
+    const data = {
+      addressID: '3a9fa7a2-827f-4dde-9e25-74dad91da4bb',
+      daysAndTimings: timings,
+    };
+    dispatch(daysAndTimingThunk(data, token));
+  };
+
+  const getDaysAndTiming = async () => {
+    const token = await AsyncStorage.getItem('token');
+    setToken(token);
+    dispatch(
+      getdaysAndTimingThunk('3a9fa7a2-827f-4dde-9e25-74dad91da4bb', token),
+    );
+  };
 
   const switchSelection = index => {
     if (switchIndex.length == 0) {
@@ -91,9 +153,16 @@ const BusinessTiming = ({navigation}) => {
     const newState = timings.map(obj =>
       obj.id === selectedTime.id
         ? value == 'from'
-          ? {...obj, fromTime: moment(time).format('HH:mm A')}
-          : {...obj, toTime: moment(time).format('HH:mm A')}
+          ? {...obj, fromTime: moment(time).format('HH:mm:ss')}
+          : {...obj, toTime: moment(time).format('HH:mm:ss')}
         : obj,
+    );
+    setTimings(newState);
+  };
+
+  const chageStatus = id => {
+    const newState = timings.map(obj =>
+      obj.id == id ? {...obj, status: !obj.status} : obj,
     );
     setTimings(newState);
   };
@@ -110,7 +179,7 @@ const BusinessTiming = ({navigation}) => {
             <View key={index}>
               <View style={styles.inputWrapper}>
                 <Label
-                  label={item.day}
+                  label={days[index]}
                   fontFamily={FONTS.InterBold}
                   size={hp(2)}
                   color={Colors.primary_dark}
@@ -123,13 +192,14 @@ const BusinessTiming = ({navigation}) => {
                     width: wp(25),
                   }}>
                   <Label
-                    label={switchIndex.includes(index) ? 'Open' : 'Closed'}
+                    // label={switchIndex.includes(index) ? 'Open' : 'Closed'}
+                    label={item.status ? 'Open' : 'Closed'}
                     fontFamily={FONTS.InterRegular}
                     color={Colors.primary_dark}
                   />
                   <Switch
-                    value={switchIndex.includes(index) && true}
-                    onValueChange={() => switchSelection(index)}
+                    value={item.status && true}
+                    onValueChange={() => chageStatus(item.id)}
                     color={Colors.primary}
                   />
                 </View>
@@ -137,23 +207,19 @@ const BusinessTiming = ({navigation}) => {
               <View style={styles.inputWrapper}>
                 <View style={styles.dropdown}>
                   <Label
-                    label={item.fromTime}
+                    label={moment(item.fromTime, 'HH:mm:ss').format('HH:mm A')}
                     fontFamily={FONTS.InterRegular}
                     color={Colors.lightGray3}
                   />
                   <TouchableOpacity
-                    disabled={!switchIndex.includes(index)}
+                    disabled={!item.status}
                     onPress={() => {
                       setOpen(true);
                       setSelectedTime(item);
                       setValue('from');
                     }}>
                     <Icon
-                      source={
-                        switchIndex.includes(index)
-                          ? Images.menushow
-                          : Images.menuhide
-                      }
+                      source={item.status ? Images.menushow : Images.menuhide}
                       size={wp(3)}
                     />
                   </TouchableOpacity>
@@ -165,23 +231,19 @@ const BusinessTiming = ({navigation}) => {
                 />
                 <View style={styles.dropdown}>
                   <Label
-                    label={item.toTime}
+                    label={moment(item.toTime, 'HH:mm:ss').format('HH:mm A')}
                     fontFamily={FONTS.InterRegular}
                     color={Colors.lightGray3}
                   />
                   <TouchableOpacity
-                    disabled={!switchIndex.includes(index)}
+                    disabled={!item.status}
                     onPress={() => {
                       setOpen(true);
                       setSelectedTime(item);
                       setValue('to');
                     }}>
                     <Icon
-                      source={
-                        switchIndex.includes(index)
-                          ? Images.menushow
-                          : Images.menuhide
-                      }
+                      source={item.status ? Images.menushow : Images.menuhide}
                       size={wp(3)}
                     />
                   </TouchableOpacity>
@@ -192,7 +254,7 @@ const BusinessTiming = ({navigation}) => {
         </ScrollView>
       </View>
       <Button
-        onPress={() => navigation.navigate('SelectServices')}
+        onPress={() => addDaysandTiming()}
         title={Strings.saveLocationTime}
         bgColor={Colors.primary}
         titleColor={Colors.white}
@@ -211,6 +273,7 @@ const BusinessTiming = ({navigation}) => {
           setOpen(false);
         }}
       />
+      <Spinner visible={timingsRes.loading | daysAndTiming.loading} />
     </SafeAreaView>
   );
 };
