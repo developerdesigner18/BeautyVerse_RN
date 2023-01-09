@@ -25,9 +25,9 @@ import {
 } from '../../../theme/layout';
 import {FONTS} from '../../../theme/fonts';
 
-const BusinessTiming = ({navigation}) => {
+const BusinessTiming = ({navigation, route}) => {
+  const {params} = route;
   const dispatch = useDispatch();
-  const {timingsRes, daysAndTiming} = useSelector(state => state);
   const [switchIndex, setSwitchIndex] = useState([]);
   const [open, setOpen] = useState(false);
   const [selectedTime, setSelectedTime] = useState();
@@ -94,26 +94,39 @@ const BusinessTiming = ({navigation}) => {
     },
   ]);
 
+  const loading = useSelector(
+    state => state.timingsRes.loading | state.daysAndTiming.loading,
+  );
+  const timingsRes = useSelector(
+    state => state.timingsRes.isSuccess && state.timingsRes.timingsRes.data,
+  );
+  const daysAndTiming = useSelector(
+    state => state.daysAndTiming.isSuccess && state.daysAndTiming,
+  );
+
   useEffect(() => {
-    function postSuccess() {
-      if (daysAndTiming.isSuccess) {
-        showMessage({
-          message: 'Inserted successfully',
-          floating: true,
-          type: 'success',
-        });
-        navigation.navigate('SelectServices');
-      }
+    console.log(timingsRes);
+    if (timingsRes) {
+      setTimings(timingsRes.data);
     }
-    postSuccess();
-    function getSuccess() {
-      if (timingsRes.isSuccess) {
-        const data = timingsRes.timingsRes.data.data;
-        data.length > 1 && setTimings(data);
-      }
+  }, [timingsRes]);
+
+  useEffect(() => {
+    if (daysAndTiming) {
+      showMessage({
+        message: daysAndTiming.message,
+        floating: true,
+        type: 'success',
+      });
+      navigation.navigate(
+        params.path == 'profile' ? 'MyProfile' : 'SelectServices',
+      );
     }
-    getSuccess();
-  }, [daysAndTiming, timingsRes]);
+
+    return () => {
+      dispatch(daysAndTimingThunk(''));
+    };
+  }, [daysAndTiming]);
 
   useEffect(() => {
     getDaysAndTiming();
@@ -273,7 +286,7 @@ const BusinessTiming = ({navigation}) => {
           setOpen(false);
         }}
       />
-      <Spinner visible={timingsRes.loading | daysAndTiming.loading} />
+      <Spinner visible={loading} />
     </SafeAreaView>
   );
 };

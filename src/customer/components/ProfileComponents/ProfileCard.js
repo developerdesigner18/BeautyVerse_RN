@@ -12,15 +12,24 @@ import {TouchableOpacity} from 'react-native';
 import {ProfileStyles} from '../../screens/ProfileScreens/ProfileStyles';
 
 // create a component
-const ProfileCard = ({avtar, mainText, text, onPress, showmenu,disabled,MenuOnpress}) => {
+const ProfileCard = ({
+  avtar,
+  mainText,
+  text,
+  onPress,
+  showmenu,
+  disabled,
+  MenuOnpress,
+}) => {
   return (
-    <TouchableOpacity 
-    disabled={disabled}
-    onPress={onPress} style={ProfileStyles.profileCard}>
+    <TouchableOpacity
+      disabled={disabled}
+      onPress={onPress}
+      style={ProfileStyles.profileCard}>
       <Avatar rounded size={50} source={avtar} />
       <View style={{width: wp(55), marginLeft: -5}}>
         <SemiBold
-          AllStyle={{marginTop: -12}}
+          AllStyle={{marginTop: -12, textTransform: 'capitalize'}}
           FontSize={hp(2)}
           EnterText={mainText}
         />
@@ -36,15 +45,14 @@ const ProfileCard = ({avtar, mainText, text, onPress, showmenu,disabled,MenuOnpr
 
       {showmenu ? (
         <TouchableOpacity
-        hitSlop={{right:20,left:20,top:20,bottom:20}}
-        onPress={MenuOnpress}
-        >
+          hitSlop={{right: 20, left: 20, top: 20, bottom: 20}}
+          onPress={MenuOnpress}>
           <Image
-          resizeMode="contain"
-          style={{height: hp(3), width: hp(3)}}
-          source={Images.menudots}
-        />
-          </TouchableOpacity>
+            resizeMode="contain"
+            style={{height: hp(3), width: hp(3)}}
+            source={Images.menudots}
+          />
+        </TouchableOpacity>
       ) : (
         <Image
           resizeMode="contain"

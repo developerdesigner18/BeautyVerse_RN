@@ -1,5 +1,5 @@
 //import liraries
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import Modal from 'react-native-modal';
-import FlashMessage, {showMessage} from 'react-native-flash-message';
+import {showMessage} from 'react-native-flash-message';
 import {
   forgotPassThunk,
   verifyOTPThunk,
@@ -29,26 +29,53 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import OTPSheet from '../../../components/AuthComponents/OTPSheet';
 import Spinner from '../../../../bussiness/components/Spinner';
 
-const ForgotPass = ({navigation}) => {
+const ForgotPass = ({navigation, route}) => {
+  const {params} = route;
   const dispatch = useDispatch();
-  const {forgotPass, otp} = useSelector(state => state);
   const [email, setEmail] = useState('');
   const [OTP, setOTP] = useState('');
   const [verifyModal, setVerifyModal] = useState(false);
-  const [isLoading, setLoading] = useState(false);
+  const loading = useSelector(
+    state => state.forgotPass.loading | state.otp.loading,
+  );
+  const forgotPass = useSelector(state => state.forgotPass.isSuccess);
+  const otp = useSelector(
+    state => state.otp.isSuccess && state.otp.verifyOTP.data,
+  );
+
+  useEffect(() => {
+    forgotPass &&
+      setTimeout(() => {
+        setVerifyModal(true);
+      }, 1000);
+  }, [forgotPass]);
+
+  useEffect(() => {
+    if (otp) {
+      setVerifyModal(false);
+      showMessage({
+        message: otp.message,
+        floating: true,
+        type: 'success',
+      });
+      navigation.navigate('ResetPass', {
+        userId: otp.userid,
+        token: otp.access_token,
+        role: params.role,
+      });
+    }
+
+    return () => {
+      dispatch(verifyOTPThunk(''));
+    };
+  }, [otp]);
 
   const forgotPassword = () => {
-    setLoading(true);
     const data = {
       emailID: email,
       appID: '98cec7e6-3b06-11ed-a261-0242ac120002',
     };
     dispatch(forgotPassThunk(data));
-    if (forgotPass.isSuccess) {
-      setLoading(false);
-      setVerifyModal(true);
-    }
-    setLoading(false);
   };
 
   const verifyOTP = () => {
@@ -57,13 +84,6 @@ const ForgotPass = ({navigation}) => {
       OTP: OTP,
     };
     dispatch(verifyOTPThunk(data));
-    if (otp.isSuccess && otp.verifyOTP.data.status == 1) {
-      setVerifyModal(false);
-      navigation.navigate('ResetPass', {
-        userId: otp.verifyOTP.data.userid,
-        token: otp.verifyOTP.data.access_token,
-      });
-    }
   };
 
   return (
@@ -120,14 +140,9 @@ const ForgotPass = ({navigation}) => {
           onVerify={() => verifyOTP()}
         />
       </Modal>
-      <Modal isVisible={isLoading}>
-        <Spinner />
-      </Modal>
+      <Spinner visible={loading} />
     </SafeAreaView>
   );
 };
 
-// define your styles
-
-//make this component available to the app
 export default ForgotPass;

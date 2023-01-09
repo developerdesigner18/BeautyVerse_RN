@@ -1,8 +1,13 @@
-//import liraries
-import {View, Text, StyleSheet, TouchableOpacity, Image} from 'react-native';
-import {Avatar} from 'react-native-elements';
+import React, {useState, useEffect} from 'react';
+import {View, StyleSheet, TouchableOpacity, Image} from 'react-native';
+import {useDispatch, useSelector} from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {showMessage} from 'react-native-flash-message';
+import {
+  getAddressThunk,
+  removeAddressThunk,
+} from '../../../../store/actions/profile-actions';
 import SemiBold from '../../../components/HomeComponent/SemiBold';
-import Textnormal from '../../../components/Textnormal';
 import {Images} from '../../../theme/Images';
 import {
   widthPercentageToDP as wp,
@@ -10,41 +15,52 @@ import {
 } from '../../../theme/layout';
 import {BusinessPageStyles} from '../../BusinessPage/BusinessPageStyles';
 import {Colors} from '../../../theme/colors';
-import {ProfileStyles} from '../ProfileStyles';
 import ProfileCard from '../../../components/ProfileComponents/ProfileCard';
 import HeaderTop from '../../../components/HomeComponent/headerTop';
 import {SafeAreaView} from 'react-native';
 import {Strings} from '../../../theme/strings';
-import Popover, {PopoverPlacement} from 'react-native-popover-view';
-import { useState } from 'react';
-import IconButton from '../../../../bussiness/components/IconButton/index';
-import Icon from '../../../../bussiness/components/Icon/index';
+import ItemCard from '../../../../bussiness/components/ItemCard';
+import Spinner from '../../../../bussiness/components/Spinner';
+import {menu} from '../../../../bussiness/theme/arrays';
 
-
-
-
-// create a component
 const UserAddresses = ({navigation}) => {
-  
-  const AddArray = [
-    {
-      avtar: Images.homeround,
-      maintext: 'Home',
-      text: 'user address',
-    },
-    {
-      avtar: Images.locround,
-      maintext: 'Matti’s Office',
-      text: 'user address',
-    },
-    {
-      avtar: Images.workround,
-      maintext: 'Work',
-      text: 'user address',
-    },
-  ];
+  const dispatch = useDispatch();
+  const [token, setToken] = useState('');
+  const addresses = useSelector(
+    state => state.address.isSuccess && state.address.address.data.data,
+  );
+  const loading = useSelector(
+    state => state.address.loading | state.removeAddress.loading,
+  );
+  const removeSucces = useSelector(state => state.removeAddress.isSuccess);
+  const removeAddress = useSelector(
+    state =>
+      state.removeAddress.isSuccess && state.removeAddress.removeAddress.data,
+  );
 
-  const [optionModal,setoptionModal] = useState(false);
+  useEffect(() => {
+    getAddress();
+    navigation.addListener('focus', () => {
+      getAddress();
+    });
+  }, []);
+
+  useEffect(() => {
+    if (removeSucces) {
+      showMessage({
+        message: removeAddress.message,
+        floating: true,
+        type: 'success',
+      }),
+        getAddress();
+    }
+  }, [removeSucces]);
+
+  const getAddress = async () => {
+    const token = await AsyncStorage.getItem('token');
+    setToken(token);
+    dispatch(getAddressThunk(token));
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -54,26 +70,36 @@ const UserAddresses = ({navigation}) => {
         }}
         HeaderText={'Addresses'}
       />
-      <View style={{width: wp(90), alignSelf: 'center'}}>
-        {AddArray.map(item => (
-          <ProfileCard
-            MenuOnpress={() => {
-              setoptionModal(true)
-              console.log('MenuPressed');
-            }}
-            disabled={true}
-            showmenu
-            avtar={item.avtar}
-            mainText={item.maintext}
-            text={item.text}
-          />
-        ))}
+      <View style={{width: wp(90), alignSelf: 'center', paddingTop: hp(2)}}>
+        {addresses.length > 0 &&
+          addresses.map(item => (
+            <ItemCard
+              userIcon={
+                item.locationType == 'Home'
+                  ? Images.homeround
+                  : item.locationType == 'Office' || item.locationType == 'Work'
+                  ? Images.workround
+                  : Images.locround
+              }
+              title={item.locationType}
+              desc={item.flatNo + ', ' + item.buildingName}
+              leftIcon={Images.menudots}
+              menu={menu}
+              onPressItem={label =>
+                label == 'Remove'
+                  ? dispatch(removeAddressThunk(item.id, token))
+                  : ' '
+              }
+            />
+          ))}
 
-        <Popover
+        {/* <Popover
           isVisible={optionModal}
-          popoverStyle={{ backgroundColor: Colors.white,
+          popoverStyle={{
+            backgroundColor: Colors.white,
             borderRadius: 10,
-            paddingHorizontal: wp(2),}}
+            paddingHorizontal: wp(2),
+          }}
           placement={PopoverPlacement.BOTTOM}
           onRequestClose={() => setoptionModal(false)}
           // from={
@@ -81,7 +107,7 @@ const UserAddresses = ({navigation}) => {
           //     <Icon source={leftIcon} size={hp(2)} color={leftIconColor} />
           //   </TouchableOpacity>
           // }
-          >
+        >
           <View>
             <IconButton
               onPress={() => setoptionModal(false)}
@@ -104,7 +130,7 @@ const UserAddresses = ({navigation}) => {
               left
             />
           </View>
-        </Popover>
+        </Popover> */}
         <TouchableOpacity
           onPress={() => {
             navigation.navigate('AddAddress', {screen: 'UserAddress'});
@@ -125,11 +151,11 @@ const UserAddresses = ({navigation}) => {
           />
         </TouchableOpacity>
       </View>
+      <Spinner visible={loading} />
     </SafeAreaView>
   );
 };
 
-// define your style
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -137,5 +163,4 @@ const styles = StyleSheet.create({
   },
 });
 
-//make this component available to the app
 export default UserAddresses;

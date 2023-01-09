@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {View, SafeAreaView, ScrollView} from 'react-native';
+import React, {useEffect} from 'react';
+import {View, SafeAreaView} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getUserThunk} from '../../../../store/actions/profile-actions';
@@ -18,11 +18,14 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from '../../../theme/layout';
+import Spinner from '../../../components/Spinner';
 
 const MyProfile = ({navigation}) => {
   const dispatch = useDispatch();
-  const {profile} = useSelector(state => state);
-  const [user, setUser] = useState();
+  const loading = useSelector(state => state.profile.loading);
+  const profile = useSelector(
+    state => state.profile.isSuccess && state.profile.profile.data,
+  );
 
   useEffect(() => {
     getUserProfile();
@@ -30,9 +33,6 @@ const MyProfile = ({navigation}) => {
   const getUserProfile = async () => {
     const token = await AsyncStorage.getItem('token');
     dispatch(getUserThunk(token));
-    if (profile.isSuccess) {
-      setUser(profile.profile.data.data);
-    }
   };
 
   return (
@@ -45,7 +45,7 @@ const MyProfile = ({navigation}) => {
         <View style={styles.profileView}>
           <Icon source={Images.customer} size={hp(10)} />
           <Label
-            label={user ? user.fullname : Strings.businessNameHere}
+            label={profile ? profile.fullname : Strings.businessNameHere}
             color={Colors.primary_dark}
             fontFamily={FONTS.InterBold}
             size={hp(2)}
@@ -53,13 +53,13 @@ const MyProfile = ({navigation}) => {
             marginTop={hp(2)}
           />
           <Label
-            label={user ? user.emailID : 'business@email.com'}
+            label={profile ? profile.emailID : 'business@email.com'}
             color={Colors.lightGray3}
             size={hp(1.8)}
             lineHeight={hp(3)}
           />
           <Label
-            label={user ? user.mobile : '+123 456 7890'}
+            label={profile ? profile.mobile : '+123 456 7890'}
             color={Colors.lightGray3}
             size={hp(1.8)}
             lineHeight={hp(3)}
@@ -81,7 +81,8 @@ const MyProfile = ({navigation}) => {
           <ItemCard
             onPress={() => {
               index == 0 && navigation.navigate('Address');
-              index == 1 && navigation.navigate('BusinessTiming');
+              index == 1 &&
+                navigation.navigate('BusinessTiming', {path: 'profile'});
               index == 2 && navigation.navigate('Password');
             }}
             userIcon={item.icon}
@@ -91,6 +92,7 @@ const MyProfile = ({navigation}) => {
           />
         ))}
       </View>
+      <Spinner visible={loading} />
     </SafeAreaView>
   );
 };

@@ -9,4 +9,5 @@ export const endPoints = {
   address: '/users/address',
   daysAndTiming: 'users/daysAndTimings',
   images: 'images',
+  serviceInfo: 'services/addServiceInfo',
 };

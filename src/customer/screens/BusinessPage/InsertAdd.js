@@ -1,5 +1,5 @@
 //import liraries
-import React, {useState,useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   SafeAreaView,
@@ -11,6 +11,10 @@ import {
   ScrollView,
   FlatList,
 } from 'react-native';
+import {useDispatch, useSelector} from 'react-redux';
+import {showMessage} from 'react-native-flash-message';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {addressThunk} from '../../../store/actions/profile-actions';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -25,33 +29,76 @@ import SemiBold from '../../components/HomeComponent/SemiBold';
 import {Colors} from '../../theme/colors';
 import AnimatedInput from '../../components/BusinessPage/AnimatedInput';
 import Button from '../../components/AuthComponents/FilledButton';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import Spinner from '../../../bussiness/components/Spinner';
 
 // create a component
 const InsertAdd = ({navigation, route}) => {
-
-
-useEffect(()=>{
-  GetuserLocation();
-},[])
-
-
-  const GetuserLocation = async () => {
-    const Loc = await AsyncStorage.getItem("Location");
-    setLocation(Loc)
-    console.log(Loc,'===LOC====');
-  }
-
+  const dispatch = useDispatch();
   const {params} = route;
-
   const [latitude, setLatitude] = useState(params.latitude);
   const [longitude, setLongitude] = useState(params.longitude);
   const [Location, setLocation] = useState([]);
+  const [Index, SetIndex] = useState('Home');
+  const [flatNo, setFlatNo] = useState('');
+  const [villa, setVilla] = useState('');
+  const [street, setStreet] = useState();
+  const [area, setArea] = useState();
+  const [direction, setDirection] = useState('');
+  const [locationName, setLocationName] = useState();
 
+  const loading = useSelector(state => state.addressRes.isSuccess);
+  const addressRes = useSelector(
+    state => state.addressRes.isSuccess && state.addressRes.addressRes.data,
+  );
 
-  const [Index, SetIndex] = useState(0);
+  useEffect(() => {
+    function postSuccess() {
+      if (addressRes) {
+        showMessage({
+          message: addressRes.message,
+          floating: true,
+          type: 'success',
+        });
+        navigation.navigate('UserAddresses');
+      }
+    }
+    postSuccess();
+    return () => {
+      dispatch(addressThunk(''));
+    };
+  }, [addressRes]);
 
-  console.log(params);
+  useEffect(() => {
+    GetuserLocation();
+    const address = params.place.split(',');
+    console.log(address);
+    setStreet(address[0]);
+    setArea(address[1]);
+    setLocationName(address[address.length - 1]);
+  }, []);
+
+  const GetuserLocation = async () => {
+    const Loc = await AsyncStorage.getItem('Location');
+    setLocation(Loc);
+    console.log(Loc, '===LOC====');
+  };
+
+  const addAddress = async () => {
+    const token = await AsyncStorage.getItem('token');
+    const data = {
+      flatNo: flatNo,
+      buildingName: villa,
+      street: street,
+      area: area,
+      directions: direction,
+      locationName: locationName,
+      locationType: Index,
+      latitude: latitude,
+      longitude: longitude,
+    };
+
+    dispatch(addressThunk(data, token));
+  };
 
   const Locations = [
     {
@@ -75,15 +122,9 @@ useEffect(()=>{
     return (
       <View>
         <TouchableOpacity
-          onPress={() => {
-            console.log('========');
-            SetIndex(index);
-            console.log(index, '===actual==');
-            // SetselectedLoc(item);
-            console.log(Index, '===Index===');
-          }}
+          onPress={() => SetIndex(item.name)}
           style={{alignItems: 'center', marginRight: wp(8)}}>
-          {Index === index ? (
+          {Index === item.name ? (
             <Image
               resizeMode="contain"
               style={{height: hp(7.5), width: hp(7.5)}}
@@ -139,16 +180,19 @@ useEffect(()=>{
           <View style={BusinessPageStyles.editView}>
             <View>
               <SemiBold FontSize={hp(2.1)} EnterText={'Location Name'} />
-              <Text style={{color: Colors.darkpink,width:wp(60), fontSize: hp(1.7)}}>
+              <Text
+                style={{
+                  color: Colors.darkpink,
+                  width: wp(60),
+                  fontSize: hp(1.7),
+                }}>
                 {Location}
               </Text>
             </View>
             <TouchableOpacity
-            onPress={()=>{
-
-              navigation.navigate('AddAddress')
-            }}
-            >
+              onPress={() => {
+                navigation.navigate('AddAddress');
+              }}>
               <Image
                 resizeMode="contain"
                 style={{height: hp(3), width: hp(3)}}
@@ -160,11 +204,15 @@ useEffect(()=>{
 
         <View style={BusinessPageStyles.inputWrapper}>
           <AnimatedInput
+            value={flatNo}
+            onChangeText={text => setFlatNo(text)}
             label={Strings.flatNo}
             placeholder={Strings.flatVilla}
             width={wp(43)}
           />
           <AnimatedInput
+            value={villa}
+            onChangeText={text => setVilla(text)}
             label={Strings.building}
             placeholder={Strings.buildingName}
             width={wp(43)}
@@ -172,11 +220,15 @@ useEffect(()=>{
         </View>
         <View style={BusinessPageStyles.inputWrapper}>
           <AnimatedInput
+            value={street}
+            onChangeText={text => setStreet(text)}
             label={Strings.street}
             placeholder={Strings.streetName}
             width={wp(43)}
           />
           <AnimatedInput
+            value={area}
+            onChangeText={text => setArea(text)}
             label={Strings.area}
             placeholder={Strings.areaName}
             width={wp(43)}
@@ -184,6 +236,8 @@ useEffect(()=>{
         </View>
 
         <AnimatedInput
+          value={direction}
+          onChangeText={text => setDirection(text)}
           label={Strings.directions}
           placeholder={Strings.directions}
           width={wp(90)}
@@ -203,9 +257,7 @@ useEffect(()=>{
         </View>
       </ScrollView>
       <Button
-        onPress={() => {
-          navigation.navigate('BookService');
-        }}
+        onPress={() => addAddress()}
         bgColor={Colors.primary}
         title={Strings.svLoc}
         titleColor={Colors.white}
@@ -216,6 +268,7 @@ useEffect(()=>{
           alignSelf: 'center',
         }}
       />
+      <Spinner visible={loading} />
     </SafeAreaView>
   );
 };

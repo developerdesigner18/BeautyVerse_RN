@@ -1,18 +1,13 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {
-  View,
-  SafeAreaView,
-  ScrollView,
-  TouchableOpacity,
-  Platform,
-} from 'react-native';
+import {View, SafeAreaView, ScrollView, TouchableOpacity} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import Popover, {PopoverPlacement} from 'react-native-popover-view';
-import {Menu, MenuItem} from 'react-native-material-menu';
+import {useDispatch, useSelector} from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {addServiceInfoThunk} from '../../../../store/actions/services-actions';
 import Modal from 'react-native-modal';
 import {styles} from './styles';
 import {Strings} from '../../../theme/strings';
-import {option} from '../../../theme/arrays';
 import {Colors} from '../../../theme/colors';
 import {Images} from '../../../theme/images';
 import {FONTS} from '../../../theme/fonts';
@@ -33,14 +28,14 @@ import {
 const NewService = ({navigation, route}) => {
   const {params} = route;
   const touchable = useRef();
+  const dispatch = useDispatch();
   const [serviceName, setServiceName] = useState('');
   const [serviceCharge, setServiceCharge] = useState('');
   const [duration, serDuration] = useState('');
   const [addOnName, setAddOnName] = useState('');
   const [sCharge, setSCharge] = useState('');
   const [timeDuration, setTimeDuration] = useState('');
-  const [checkYes, setCheckYes] = useState(false);
-  const [checkNo, setCheckNo] = useState(false);
+  const [check, setCheck] = useState();
   const [isAddMore, setAddMore] = useState(false);
   const [isEdit, setEdit] = useState(false);
   const [isAdd, setAdd] = useState(false);
@@ -48,10 +43,43 @@ const NewService = ({navigation, route}) => {
   const [isAlert, setAlert] = useState(false);
   const [addOns, setAddOns] = useState([]);
   const [addOnObj, setAddOnObj] = useState({});
+  const [token, setToken] = useState('');
+
+  useEffect(() => {
+    async function getToken() {
+      const token = await AsyncStorage.getItem('token');
+      setToken(token);
+    }
+    getToken();
+  }, []);
 
   useEffect(() => {
     addOns.length == 0 && setAddMore(true);
   }, []);
+
+  const addService = () => {
+    const data = {
+      name: serviceName,
+      shopkeeperServiceID: '79bb57eb-8dc7-479a-8636-443e1897c687',
+      charges: serviceCharge,
+      duration: duration,
+      availableCustomerLocation: check,
+      addOns: [
+        {
+          shopkeeperServiceID: '79bb57eb-8dc7-479a-8636-443e1897c687',
+          name: 'addOn 5',
+          charges: 80,
+          duration: 40,
+        },
+        {
+          shopkeeperServiceID: '79bb57eb-8dc7-479a-8636-443e1897c687',
+          name: 'addOn 6',
+          charges: 80,
+          duration: 40,
+        },
+      ],
+    };
+  };
 
   const saveAddons = () => {
     if (addOnName == '' && sCharge == '' && timeDuration == '') {
@@ -163,19 +191,13 @@ const NewService = ({navigation, route}) => {
               }}>
               <RadioButton
                 label={Strings.yes}
-                checked={checkYes}
-                onPress={() => {
-                  setCheckYes(true);
-                  setCheckNo(false);
-                }}
+                checked={check}
+                onPress={() => setCheck(true)}
               />
               <RadioButton
                 label={Strings.no}
-                checked={checkNo}
-                onPress={() => {
-                  setCheckNo(true);
-                  setCheckYes(false);
-                }}
+                checked={!check}
+                onPress={() => setCheck(false)}
               />
             </View>
 
@@ -384,7 +406,7 @@ const NewService = ({navigation, route}) => {
           btnStyle={styles.addBtn}
         />
       </View>
-            
+
       <Popover
         from={touchable}
         isVisible={showPopover}

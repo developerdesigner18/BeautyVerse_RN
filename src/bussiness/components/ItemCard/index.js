@@ -65,6 +65,7 @@ const Index = ({
               fontFamily={FONTS.InterBold}
               color={Colors.primary_dark}
               marginBottom={hp(1)}
+              textTransform
             />
             <View style={styles.row}>
               {rating && <Icon source={Images.rating} size={hp(1.5)} />}

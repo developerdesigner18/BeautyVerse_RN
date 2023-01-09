@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   ImageBackground,
@@ -27,8 +27,27 @@ import {
 
 const ProfileScreen = ({navigation}) => {
   const dispatch = useDispatch();
-  const {profilePic} = useSelector(state => state);
   const [profileUri, setProfileUri] = useState('');
+
+  const loading = useSelector(state => state.profilePic.loading);
+  const profilePic = useSelector(state => state.profilePic.isSuccess);
+  // const {profilePic} = useSelector(state => state);
+
+  useEffect(() => {
+    function postSuccess() {
+      if (profilePic) {
+        showMessage({
+          message: 'Profile pitcure updated successfully',
+          floating: true,
+          type: 'success',
+        });
+      }
+    }
+    postSuccess();
+    return () => {
+      dispatch(profilePicThunk(''));
+    };
+  }, [profilePic]);
 
   const profilePicker = () => {
     ImagePicker.openPicker({}).then(image => {
@@ -49,13 +68,6 @@ const ProfileScreen = ({navigation}) => {
       name: 'imagename.jpg',
     });
     dispatch(profilePicThunk(formData, token));
-    if (profilePic.isSuccess) {
-      showMessage({
-        message: 'Profile pitcure updated successfully',
-        floating: true,
-        type: 'success',
-      });
-    }
   };
 
   return (
@@ -96,7 +108,7 @@ const ProfileScreen = ({navigation}) => {
           titleColor={Colors.primary}
         />
       </View>
-      <Spinner visible={profilePic.loading} />
+      <Spinner visible={loading} />
     </SafeAreaView>
   );
 };

@@ -48,6 +48,7 @@ const LoginScreen = ({navigation, route}) => {
               type: 'success',
             });
           await AsyncStorage.setItem('token', user.access_token);
+          await AsyncStorage.setItem('role', params.role);
           setTimeout(() => {
             navigation.replace(
               params.role == 'Customer' ? 'customer' : 'business',
@@ -71,9 +72,8 @@ const LoginScreen = ({navigation, route}) => {
         emailID: email,
         password: password,
       };
-      try {
-        dispatch(loginThunk(data));
-      } catch (error) {}
+
+      dispatch(loginThunk(data));
     } else {
       showMessage({
         message: 'All fields must be filled.',
@@ -125,7 +125,7 @@ const LoginScreen = ({navigation, route}) => {
             />
             <TouchableOpacity
               onPress={() => {
-                navigation.navigate('ForgotPass');
+                navigation.navigate('ForgotPass', {role: params.role});
               }}>
               <Text
                 style={{

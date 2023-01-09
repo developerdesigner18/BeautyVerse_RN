@@ -197,7 +197,7 @@ const AddAddress = ({navigation, route}) => {
             navigation.navigate('InsertAdd', {
               latitude: latitude,
               longitude: longitude,
-              // place: place ? place : 'Melbourne, VIC, Australia',
+              place: place ? place : 'Melbourne, VIC, Australia',
             });
           }}
           titleColor={Colors.white}

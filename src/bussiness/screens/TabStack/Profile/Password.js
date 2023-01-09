@@ -3,17 +3,17 @@ import {View, SafeAreaView} from 'react-native';
 import {TextInput} from 'react-native-paper';
 import {useDispatch, useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import FlashMessage, {showMessage} from 'react-native-flash-message';
+import {showMessage} from 'react-native-flash-message';
 import {changePasswordThunk} from '../../../../store/actions/profile-actions';
 import {Strings} from '../../../theme/strings';
 import {styles} from './styles';
 import {Colors} from '../../../theme/colors';
 import Header from '../../../components/Header';
 import Button from '../../../components/Button';
+import Spinner from '../../../components/Spinner';
 
 const Password = ({navigation}) => {
   const dispatch = useDispatch();
-  const {changePassword} = useSelector(state => state);
   const [isOldPassSecure, setOldPassSecure] = useState(true);
   const [isNewPassSecure, setNewPassSecure] = useState(true);
   const [isReNewPassSecure, setReNewPassSecure] = useState(true);
@@ -22,33 +22,36 @@ const Password = ({navigation}) => {
   const [reNewPassword, setReNewPassword] = useState('');
   const [token, setToken] = useState('');
 
-  useEffect(() => {
-    getToken();
-  }, []);
+  const loading = useSelector(state => state.changePassword.loading);
+  const data = useSelector(
+    state =>
+      state.changePassword.isSuccess &&
+      state.changePassword.changePassword.data,
+  );
 
-  const getToken = async () => {
+  useEffect(() => {
+    if (data) {
+      showMessage({
+        message: data.message,
+        floating: true,
+        type: 'success',
+      });
+      navigation.goBack();
+    }
+    return () => {
+      dispatch(changePasswordThunk(''));
+    };
+  }, [data]);
+
+  const changePasswordFunction = async () => {
     const token = await AsyncStorage.getItem('token');
     setToken(token);
-  };
-
-  const changePasswordFunction = () => {
     if (newPassword == reNewPassword) {
       const data = {
         oldPassword: oldPassword,
         newPassword: newPassword,
       };
       dispatch(changePasswordThunk(data, token));
-      if (changePassword.isSuccess) {
-        const message = changePassword.changePassword.data.message;
-        showMessage({
-          message: message,
-          floating: true,
-          type: 'success',
-        });
-        setTimeout(() => {
-          navigation.goBack();
-        }, 2000);
-      }
     } else {
       showMessage({
         message: 'Password does not match',
@@ -57,6 +60,7 @@ const Password = ({navigation}) => {
       });
     }
   };
+
   return (
     <SafeAreaView style={styles.container}>
       <Header
@@ -123,7 +127,7 @@ const Password = ({navigation}) => {
           btnStyle={styles.addBtn}
         />
       </View>
-      <FlashMessage position="top" />
+      <Spinner visible={loading} />
     </SafeAreaView>
   );
 };

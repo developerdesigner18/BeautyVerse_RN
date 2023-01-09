@@ -23,23 +23,34 @@ import {
 
 const Address = ({navigation}) => {
   const dispatch = useDispatch();
-  const {address, removeAddress} = useSelector(state => state);
   const [token, setToken] = useState('');
-  const [addresses, setAddresses] = useState([]);
 
-  useEffect(() => {
-    function getSuccess() {
-      if (address.isSuccess) {
-        const data = address.address.data.data;
-        setAddresses(data);
-      }
-    }
-    getSuccess();
-  }, [address]);
+  const loading = useSelector(
+    state => state.address.loading | state.removeAddress.loading,
+  );
+  const addresses = useSelector(
+    state => state.address.isSuccess && state.address.address.data.data,
+  );
+  const removeSucces = useSelector(state => state.removeAddress.isSuccess);
+  const removeAddress = useSelector(
+    state =>
+      state.removeAddress.isSuccess && state.removeAddress.removeAddress.data,
+  );
 
   useEffect(() => {
     getAddress();
   }, []);
+
+  useEffect(() => {
+    if (removeSucces) {
+      showMessage({
+        message: removeAddress.message,
+        floating: true,
+        type: 'success',
+      }),
+        getAddress();
+    }
+  }, [removeSucces]);
 
   const getAddress = async () => {
     const token = await AsyncStorage.getItem('token');
@@ -47,39 +58,30 @@ const Address = ({navigation}) => {
     dispatch(getAddressThunk(token));
   };
 
-  const deleteAddress = id => {
-    dispatch(removeAddressThunk(id, token));
-    if (removeAddress.isSuccess) {
-      const message = removeAddress.removeAddress.data.message;
-      getAddress();
-      showMessage({
-        message: message,
-        floating: true,
-        type: 'success',
-      });
-    }
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <Header
         headerTitle={Strings.addressesandTimings}
-        onPressBack={() => navigation.goBack()}
+        onPressBack={() => navigation.replace('MyProfile')}
       />
       <View style={styles.mainView}>
-        {addresses.length > 0 &&
-          addresses.map((item, index) => (
-            <ItemCard
-              userIcon={Images.address}
-              title={'Location ' + (Number(index) + 1)}
-              desc={item.flatNo + ', ' + item.buildingName}
-              leftIcon={Images.option}
-              menu={menu}
-              onPressItem={label =>
-                label == Strings.remove ? deleteAddress(item.id) : ' '
-              }
-            />
-          ))}
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {addresses.length > 0 &&
+            addresses.map((item, index) => (
+              <ItemCard
+                userIcon={Images.address}
+                title={'Location ' + (Number(index) + 1)}
+                desc={item.flatNo + ', ' + item.buildingName}
+                leftIcon={Images.option}
+                menu={menu}
+                onPressItem={label =>
+                  label == Strings.remove
+                    ? dispatch(removeAddressThunk(item.id, token))
+                    : ' '
+                }
+              />
+            ))}
+        </ScrollView>
         <IconButton
           onPress={() => navigation.navigate('AddLocation', {from: 'profile'})}
           label={Strings.addNewAddress}
@@ -93,6 +95,7 @@ const Address = ({navigation}) => {
           left
         />
       </View>
+      <Spinner visible={loading} />
     </SafeAreaView>
   );
 };

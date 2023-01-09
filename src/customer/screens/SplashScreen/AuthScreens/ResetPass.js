@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   TextInput,
@@ -27,15 +27,32 @@ import Button from '../../../components/AuthComponents/FilledButton';
 import {Colors} from '../../../theme/colors';
 import TwoSideButton from '../../../components/AuthComponents/TwoSideButton';
 import BottomTitle from '../../../components/AuthComponents/BottomTitle';
+import Spinner from '../../../../bussiness/components/Spinner';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 // create a component
 const ResetPass = ({navigation, route}) => {
   const dispatch = useDispatch();
   const {params} = route;
-  const {resetPass} = useSelector(state => state);
   const [newPass, setNewPass] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
+  const loading = useSelector(state => state.resetPass.loading);
+  const resetPass = useSelector(state => state.resetPass.isSuccess);
+
+  useEffect(() => {
+    if (resetPass) {
+      showMessage({
+        message: 'Password updated successfully',
+        floating: true,
+        type: 'success',
+      });
+      navigation.replace('LoginScreen', {role: params.role});
+    }
+
+    return () => {
+      dispatch(resetPassThunk(''));
+    };
+  }, [resetPass]);
 
   const resetPassword = () => {
     if (newPass != confirmPass) {
@@ -50,9 +67,6 @@ const ResetPass = ({navigation, route}) => {
         password: confirmPass,
       };
       dispatch(resetPassThunk(data, params.token));
-      if (resetPass.isSuccess) {
-        navigation.navigate('LoginScreen');
-      }
     }
   };
   return (
@@ -107,6 +121,7 @@ const ResetPass = ({navigation, route}) => {
           </View>
         </View>
       </TouchableWithoutFeedback>
+      <Spinner visible={loading} />
     </SafeAreaView>
   );
 };

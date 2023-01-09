@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, StyleSheet, Text} from 'react-native';
 import OTPTextView from 'react-native-otp-textinput';
+import Modal from 'react-native-modal';
 import Button from './FilledButton';
 import {
   widthPercentageToDP as wp,

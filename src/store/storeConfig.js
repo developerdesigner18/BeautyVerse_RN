@@ -19,6 +19,8 @@ import getDaysAndTimingReducer from './reducers/profile-reducers/get-days-timing
 import postBusinessPhotosReducer from './reducers/profile-reducers/post-images-reducer';
 import getBusinessPhotosReducer from './reducers/profile-reducers/get-images-reducer';
 
+import addServiceReducer from './reducers/services-reducers.js/add-service-reducer';
+
 const rootReducer = combineReducers({
   login: loginReducer,
   singup: signupReducer,
@@ -35,6 +37,7 @@ const rootReducer = combineReducers({
   timingsRes: getDaysAndTimingReducer,
   businessPhotos: postBusinessPhotosReducer,
   businessPhotosRes: getBusinessPhotosReducer,
+  serviceInfo: addServiceReducer,
 });
 
 const persistConfig = {

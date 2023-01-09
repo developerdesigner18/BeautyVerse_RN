@@ -17,7 +17,10 @@ const SplashScreen = ({navigation}) => {
     setTimeout(async () => {
       // setOption(true);
       const isToken = await AsyncStorage.getItem('token');
-      isToken ? navigation.navigate('business') : setOption(true);
+      const role = await AsyncStorage.getItem('role');
+      isToken
+        ? navigation.navigate(role == 'customer' ? 'customer' : 'business')
+        : setOption(true);
     }, 3500);
   }, []);
 

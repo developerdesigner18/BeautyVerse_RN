@@ -129,7 +129,7 @@ const AddLocation = ({navigation, route}) => {
               latitude: latitude,
               longitude: longitude,
               place: place ? place : 'Melbourne, VIC, Australia',
-              path: params.from,
+              from: params.from,
             })
           }
           title={Strings.selectLocation}

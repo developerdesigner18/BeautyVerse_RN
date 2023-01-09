@@ -21,6 +21,7 @@ const Label = ({
   fontFamily,
   top,
   lineHeight,
+  textTransform,
 }) => {
   return (
     <Text
@@ -38,6 +39,7 @@ const Label = ({
           color: color,
           fontFamily: fontFamily,
           lineHeight: lineHeight,
+          textTransform: textTransform && 'capitalize',
         },
       ]}>
       {label}

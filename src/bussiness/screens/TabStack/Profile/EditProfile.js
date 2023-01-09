@@ -47,7 +47,7 @@ const EditProfile = ({navigation}) => {
 
   useEffect(() => {
     getUserProfile();
-    getPhotos();
+    // getPhotos();
   }, []);
 
   const getUserProfile = async () => {

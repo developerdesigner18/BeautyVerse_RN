@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
-import LoaderKit from 'react-native-loader-kit';
+// import LoaderKit from 'react-native-loader-kit';
+import {Circle} from 'react-native-animated-spinkit';
 import Modal from 'react-native-modal';
 import {Colors} from '../../theme/colors';
 import {
@@ -12,12 +13,13 @@ const Index = ({visible}) => {
   return (
     <Modal isVisible={visible}>
       <View style={styles.container}>
-        <LoaderKit
+        <Circle size={60} color={Colors.white} />
+        {/* <LoaderKit
           style={{width: 50, height: 50}}
           name={'BallSpinFadeLoader'}
           size={60}
           color={Colors.white}
-        />
+        /> */}
       </View>
     </Modal>
   );

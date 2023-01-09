@@ -1,6 +1,9 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, SafeAreaView, ScrollView, TouchableOpacity} from 'react-native';
 import {styles} from './styles';
+import {useDispatch, useSelector} from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {addServiceInfoThunk} from '../../../../store/actions/services-actions';
 import {hairServices} from '../../../theme/arrays';
 import {Strings} from '../../../theme/strings';
 import {Colors} from '../../../theme/colors';
@@ -16,7 +19,18 @@ import {
 import Label from '../../../components/Label';
 
 const AddService = ({navigation, route}) => {
+  const dispatch = useDispatch();
   const {params} = route;
+  const [token, setToken] = useState('');
+
+  useEffect(() => {
+    async function getToken() {
+      const token = await AsyncStorage.getItem('token');
+      setToken(token);
+    }
+    getToken();
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <Header
